@@ -45,14 +45,16 @@ public class ClosestPair {
     public static class ClosestPairResult {
         private final Point2D point1;
         private final Point2D point2;
+        private final double distance;
         private final int iterations;
         private final long time;
 
-        public ClosestPairResult(Point2D point1, Point2D point2, int iterations, long time) {
+        public ClosestPairResult(Point2D point1, Point2D point2, double distance, int iterations, long time) {
             this.point1 = point1;
             this.point2 = point2;
             this.iterations = iterations;
             this.time = time;
+            this.distance = distance;
         }
 
         public Point2D getPoint1() {
@@ -70,27 +72,28 @@ public class ClosestPair {
         public long getTime() {
             return time;
         }
+
+        public double getDistance() {
+            return distance;
+        }
     }
     
-    public static ClosestPairResult closestPair(ArrayList<Point2D> points) {
+    public static ClosestPairResult closestPairInSubset(ArrayList<Point2D> points, int start, int end) {
         Point2D point1 = null;
         Point2D point2 = null;
+        
         int iterations = 0;
         long startTime = System.nanoTime();
         double minimunDistance = Double.MAX_VALUE;
         
-        for (int i = 0; i < points.size() - 1; i++) {
+        for (int i = start; i < end - 1; i++) {
             Point2D first = points.get(i);
-            
-            for (int j = 0; j < points.size(); j++) {
+
+            for (int j = i + 1; j < end; j++) {
                 iterations++;
-                
-                if (i == j)
-                    continue;
-                
                 Point2D second = points.get(j);
                 double distance = first.distanceTo(second);
-                
+
                 if (distance < minimunDistance) {
                     point1 = first;
                     point2 = second;
@@ -99,7 +102,55 @@ public class ClosestPair {
             }
         }
         
-        return new ClosestPairResult(point1, point2, iterations, System.nanoTime() - startTime);
+        return new ClosestPairResult(point1, point2, minimunDistance, iterations, System.nanoTime() - startTime);
+    }
+    
+    public static ClosestPairResult closestPair(ArrayList<Point2D> points) {
+        Point2D point1 = null;
+        Point2D point2 = null;
+        
+        int iterations = 0;
+        long time = 0;
+        double minimunDistance = Double.MAX_VALUE;
+        int middle = points.size() / 2;
+        
+        int[][] groups = {
+            {0, middle},
+            {middle, points.size()}
+        };
+        
+        double midX = points.get(middle - 1).getX() + (points.get(middle).getX() - points.get(middle - 1).getX());
+        
+        for (int[] group : groups) {
+            ClosestPairResult subsetResult = closestPairInSubset(points, group[0], group[1]);
+            iterations += subsetResult.getIterations();
+            time += subsetResult.getTime();
+            
+            if (subsetResult.getDistance() < minimunDistance) {
+                minimunDistance = subsetResult.getDistance();
+                point1 = subsetResult.getPoint1();
+                point2 = subsetResult.getPoint2();
+            }
+        }
+        
+        ArrayList group3 = new ArrayList<>();
+        
+        for (int[] group : groups) {
+            for (int i = group[0] - 1; Math.abs(points.get(i).getX() - middle) < minimunDistance / 2.0; i--)
+                group3.add(points.get(i));
+        }
+        
+        ClosestPairResult group3Result = closestPairInSubset(group3, 0, group3.size());
+        iterations += group3Result.getIterations();
+        time += group3Result.getTime();
+
+        if (group3Result.getDistance() < minimunDistance) {
+            minimunDistance = group3Result.getDistance();
+            point1 = group3Result.getPoint1();
+            point2 = group3Result.getPoint2();
+        }
+        
+        return new ClosestPairResult(point1, point2, minimunDistance, iterations, time);
     }
     
     public static class InputFileHandler {
