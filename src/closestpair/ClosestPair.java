@@ -5,7 +5,7 @@
  * Name: David Eduardo Díaz de Moya
  *
  * Synopsis:
- * Finds the closest pair of points in a group by space partitioning.
+ * Finds the closest pair in a group of points.
  *
  *
  * Copyright (c) 2022 David Eduardo Díaz de Moya
@@ -231,7 +231,7 @@ public class ClosestPair {
             Point2D point2 = null;
             
             // Starts counting iterations, and elapsed time
-            int iterations = 0;
+            long iterations = 0;
             long startTime = System.nanoTime();
             double minimunDistance = Double.MAX_VALUE;
             int end = this.points.size();
@@ -278,67 +278,97 @@ public class ClosestPair {
         /**
          * Partitions a list of points into a list of space partitions
         */
-        public static ArrayList<SpacePartition2D> partition(ArrayList<Point2D> points) {
-            return partition(points, 0, points.size());
+        public static SpacePartitionResult partition(ArrayList<Point2D> points) {
+            long start = System.nanoTime();
+            SpacePartitionResult result = partition(points, 0, points.size());
+            
+            return new SpacePartitionResult(result.getPartitions(), result.getIterations(), System.nanoTime() - start);
         }
         
         /**
          * Partitions a sublist of points into a list of space partitions
         */
-        public static ArrayList<SpacePartition2D> partition(ArrayList<Point2D> points, int start, int end) {
+        public static SpacePartitionResult partition(ArrayList<Point2D> points, int start, int end) {
             // If the number of points in the sublist is 3 or smaller, creates a new partition
             if (end - start < 4) {
                 ArrayList<SpacePartition2D> list = new ArrayList<>();
                 list.add(new SpacePartition2D(points, start, end));
                 
-                return list;
+                return new SpacePartitionResult(list, 1, 0);
             }
             
             // Splits the sublist in half and partitions both halves
             int mid = start + (end - start) / 2;
-            ArrayList<SpacePartition2D> list = partition(points, start, mid);
-            list.addAll(partition(points, mid, end));
+            SpacePartitionResult result1 = partition(points, start, mid);
+            SpacePartitionResult result2 = partition(points, mid, end);
+            result1.getPartitions().addAll(result2.getPartitions());
             
-            return list;
+            return new SpacePartitionResult(result1.getPartitions(), 1 + result1.getIterations() + result2.getIterations(), 0);
         }
     }
     
     /**
-     * Resulting data from the execution of a closest pair algorithm
+     * Resulting data from the execution of an algorithm
     */
-    public static class ClosestPairResult {
+    public class ExecutionResult {
+        private final long iterations;
+        private final long time;
+
+        public ExecutionResult(long iterations, long time) {
+            this.iterations = iterations;
+            this.time = time;
+        }
+
+        public long getTime() {
+            return this.time;
+        }
+
+        public long getIterations() {
+            return this.iterations;
+        }
+    }
+    
+    /**
+     * Resulting data from the execution of the closest pair algorithm
+    */
+    public static class ClosestPairResult extends ExecutionResult {
         private final Point2D point1;
         private final Point2D point2;
         private final double distance;
-        private final int iterations;
-        private final long time;
 
-        public ClosestPairResult(Point2D point1, Point2D point2, double distance, int iterations, long time) {
+        public ClosestPairResult(Point2D point1, Point2D point2, double distance, long iterations, long time) {
+            super(iterations, time);
             this.point1 = point1;
             this.point2 = point2;
-            this.iterations = iterations;
-            this.time = time;
             this.distance = distance;
         }
 
         public Point2D getPoint1() {
-            return point1;
+            return this.point1;
         }
 
         public Point2D getPoint2() {
-            return point2;
-        }
-
-        public int getIterations() {
-            return iterations;
-        }
-
-        public long getTime() {
-            return time;
+            return this.point2;
         }
 
         public double getDistance() {
-            return distance;
+            return this.distance;
+        }
+    }
+    
+    /**
+     * Resulting data from partitioning points
+    */
+    public static class SpacePartitionResult extends ExecutionResult {
+        public ArrayList<SpacePartition2D> partitions;
+
+        public SpacePartitionResult(ArrayList<SpacePartition2D> partitions, long iterations, long time) {
+            super(iterations, time);
+            this.partitions = partitions;
+        }
+        
+        public ArrayList<SpacePartition2D> getPartitions() {
+            return this.partitions;
         }
     }
     
@@ -349,19 +379,18 @@ public class ClosestPair {
         Point2D point1 = null;
         Point2D point2 = null;
         
-        // Starts counting iterations, and elapsed time
-        int iterations = 0;
-        long time = 0;
+        // Splits the list of points into space partitions and starts counting iterations, and elapsed time
+        SpacePartitionResult partitionResult = SpacePartition2D.partition(points);
+        long iterations = partitionResult.getIterations();
+        long time = partitionResult.getTime();
         double minimunDistance = Double.MAX_VALUE;
-        
-        // Splits the list of points into space partitions
-        ArrayList<SpacePartition2D> partitions = SpacePartition2D.partition(points);
+        ArrayList<SpacePartition2D> partitions = partitionResult.getPartitions();
         
         // For each partition
         for (SpacePartition2D partition : partitions) {
             // Finds the closest pair in the partition
             ClosestPairResult result = partition.closestPair();
-            iterations += result.getIterations();
+            iterations += 1 + result.getIterations();
             time += result.getTime();
             
             // If the distance of the partition's closest pair is smaller than the overall minimun distance it becomes the new overall closest pair
@@ -391,7 +420,7 @@ public class ClosestPair {
             if (candidates.size() > 0 ) {
                 // Finds minimun distance between candidates
                 ClosestPairResult result = new SpacePartition2D(candidates).closestPair();
-                iterations += result.getIterations();
+                iterations += 1 + result.getIterations();
                 time += result.getTime();
 
                 // If the distance is smaller than the minimun distance, it becomes the closest pair
@@ -413,22 +442,22 @@ public class ClosestPair {
         /**
          * Creates a file containing random points
         */
-        public static void create(String filename) {
+        public static void create(String filename, int n) {
             File file = new File(filename);
             
             try {
                 // Creates file
-                if (!file.exists())
+                if (file.exists())
                     file.delete();
             
                 file.createNewFile();
                 
                 try (BufferedWriter out = new BufferedWriter(new FileWriter(file))) {
-                    // Writes 15 random unique points to the file
+                    // Writes n random unique points to the file
                     HashSet<Point2D> set = new HashSet<>();
                     
-                    while (set.size() < 15) {
-                        Point2D point = Point2D.randomPoint(100, 100);
+                    while (set.size() < n) {
+                        Point2D point = Point2D.randomPoint(10 * n, 20);
                         
                         if (!set.contains(point)) {
                             set.add(point);
@@ -442,7 +471,7 @@ public class ClosestPair {
         }
         
         /**
-         * Creates a file containing points to an arraylist of points
+         * Reads a file containing points and sequentially writes those points to an arraylist
         */
         public static ArrayList<Point2D> read(String filename) {
             ArrayList<Point2D> points = new ArrayList<>();
@@ -465,21 +494,107 @@ public class ClosestPair {
         }
     }
     
+    public static class OutputFileHandler {
+        private String filename;
+        
+        /**
+         * Creates the output file
+        */
+        public OutputFileHandler(String filename) {
+            this.filename = filename;
+            File file = new File(filename);
+            
+            try {
+                // Creates file
+                if (file.exists())
+                    file.delete();
+            
+                file.createNewFile();
+                
+                try (BufferedWriter out = new BufferedWriter(new FileWriter(file))) {
+                    out.write("size");
+                    
+                    for (int i = 0; i < 10; i++) {
+                        out.write(" time" + i + " iterations" + i);
+                    }
+                    
+                    out.write(" avg_time avg_iterations\n");
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        
+        /**
+         * Writes data to the output file
+        */
+        public void write(String data) {
+            File file = new File(this.filename);
+            
+            try (BufferedWriter out = new BufferedWriter(new FileWriter(file, true))) {
+                out.write(data);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+    
+    
     /**
      * @param args the command line arguments
      */
     public static void main(String[] args) {
         String filename = "data.txt";
-        InputFileHandler.create(filename);
-        ArrayList<Point2D> points = InputFileHandler.read(filename);
-        Point2D.sort(points);
+
+        // Creates the output directory if it does not exist
+        File outdir = new File("output");
         
-        for (SpacePartition2D partition : SpacePartition2D.partition(points)) {
-            System.out.println(partition);
+        if (!outdir.exists()){
+            outdir.mkdir();
+    }
+    
+        // Creates the output files
+        OutputFileHandler recursiveOutput = new OutputFileHandler("output/recursive.txt");
+        OutputFileHandler bruteForceOutput = new OutputFileHandler("output/brute_force.txt");
+        
+        // Increases the input size by 2 up until it becomes greater than 50000
+        int iMax = 50000;
+        
+        for (int i = 2; i < iMax; i *= 2) {
+            // Average values for all repetitions
+            double recAvgI = 0;
+            double recAvgT = 0;
+            double bfAvgI = 0;
+            double bfAvgT = 0;
+            
+            recursiveOutput.write(i + "");
+            bruteForceOutput.write(i + "");
+            
+            // Repeats 10 times for each input size
+            for (int j = 0; j < 10; j++) {
+                // Creates points and sorts
+                InputFileHandler.create(filename, i);
+                ArrayList<Point2D> points = InputFileHandler.read(filename);
+                Point2D.sort(points);
+                
+                // Runs recursive algorithm
+                System.out.println("Running recursive algorithm for " + i + " points " + j + " out of 10 times");
+                ClosestPairResult recursiveResult = closestPair(points);
+                recursiveOutput.write(" " + recursiveResult.getTime() + " " + recursiveResult.getIterations());
+                recAvgI += (double) recursiveResult.getIterations() / 10;
+                recAvgT += (double) recursiveResult.getTime() / 10;
+                
+                // Runs brute force algorithm
+                System.out.println("Running brute force algorithm for " + i + " points " + j + " out of 10 times");
+                ClosestPairResult bruteForceResult = new SpacePartition2D(points).closestPair();
+                bruteForceOutput.write(" " + bruteForceResult.getTime() + " " + bruteForceResult.getIterations());
+                bfAvgI += (double) bruteForceResult.getIterations() / 10;
+                bfAvgT += (double) bruteForceResult.getTime() / 10;
+            }
+            
+            // Writes average values to output file
+            recursiveOutput.write(" " + recAvgT + " " + recAvgI + "\n");
+            bruteForceOutput.write(" " + bfAvgT + " " + bfAvgI + "\n");
         }
-        
-        ClosestPairResult result = closestPair(points);
-        
-        System.out.println("The closest points are " + result.getPoint1() + " and " + result.getPoint2() + ".\n" + "Distance: " + result.getPoint1().distanceTo(result.getPoint2()));
     }
 }
