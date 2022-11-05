@@ -1,0 +1,76 @@
+\section{Metodología}
+En esta sección se explicará la metodología y herramientas utilizadas para el desarrollo del presente laboratorio. Se desarrolló un programa en el lenguaje de programación java que dado un conjunto de puntos, encuentra la pareja de puntos que están ubicados a la menor distancia euclideana entre ellos.  Los puntos estarían contenidos en un arreglo dinámico o una lista y estaría ordenados en orden ascendente de acuerdo a su posición. El programa recursivamente divide el conjunto de puntos en pequeños subconjuntos que constan de máximo 3 puntos. Para eso se utiliza una función similar a la que se representa en el siguiente pseudocódigo:
+
+\begin{algorithm}[H]	% uses the float package to control placement
+	\caption{Partition(points)}	% a brief description or the function name
+	\begin{algorithmic}
+	% here is where you use commands from the algorithmic package to
+	% write your algorithm
+		\IF {$points < 4$}
+			\RETURN $[points]$
+		\ENDIF
+		
+        \STATE $mid \gets points.len / 2$
+        \STATE $lower \gets$ Partition$(points[0:mid])$
+        \STATE $upper \gets$ Partition$(points[mid:points.len]$
+        \RETURN $lower + upper$ \COMMENT{Concatenación de arreglos}
+		
+	\end{algorithmic}
+	\label{algo:factorial}	% defines a label to refer to this
+\end{algorithm}
+
+Despues de esto, se ejecuta un algoritmo que compara entre todos los puntos del subconjunto para encontrar la pareja más cercana, este último algoritmo se puede llamar algoritmo de fuerza bruta. El pseudocódigo es el siguiente:
+
+\begin{algorithm}[H]	% uses the float package to control placement
+	\caption{BruteForce(points)}	% a brief description or the function name
+	\begin{algorithmic}
+	% here is where you use commands from the algorithmic package to
+	% write your algorithm
+	    \STATE $min\_distance \gets LONG\_MAX$
+	    \FOR{$i \gets 0,$ $points.len - 1$}
+    	    \FOR{$j \gets i+1,$ $points.len$}
+    	        \STATE $d \gets$ distance$(points[i], points[j])$
+    	        
+    	        \IF{$d < min\_distance$}
+    	            \STATE $min\_distance \gets d$
+    	        \ENDIF
+    	    \ENDFOR
+	    \ENDFOR
+	    
+    \RETURN $min\_distance$
+	\end{algorithmic}
+	\label{algo:factorial}	% defines a label to refer to this
+\end{algorithm}
+
+Es necesario una función que realice las particiones y ejecute el algoritmo de fuerza bruta sobre cada una de estas, encontrando la distancia mínima entre todas las particiones. Posterior a esto, la función debe comparar a los puntos ubicados en diferentes particiones que puedan ser la pareja más cercana (Si la distancia en x de los dos puntos es menor a la distancia mínima). Para esto, se utilizó el siguiente pseudocódigo:
+
+\begin{algorithm}[H]	% uses the float package to control placement
+	\caption{Recursive(points)}	% a brief description or the function name
+	\begin{algorithmic}
+	% here is where you use commands from the algorithmic package to
+	% write your algorithm
+	    \STATE $min\_distance \gets LONG\_MAX$
+	    \STATE $partitions \gets$ Partition$(partition)$
+	    \FOR{each $partition$ in $partitions$}
+	        \STATE $d \gets$ BruteForce$(points)$
+	        
+    	    \IF{$d < min\_distance$}
+	            \STATE $min\_distance \gets d$
+	        \ENDIF
+	    \ENDFOR
+	    
+	    \FOR{$i \gets 0,$ $partitions.len - 1$}
+	        \STATE $current \gets partitions[i]$
+	        \STATE $next \gets partitions[i + 1]$
+	        \STATE $candidates \gets$ Points between current and next whose $x\_distance < min\_distance$
+	        \STATE $d \gets$ BruteForce$(candidates)$
+	        \IF{$d < min\_distance$}
+	            \STATE $min\_distance \gets d$
+	        \ENDIF
+	    \ENDFOR
+    \RETURN $min\_distance$
+	\end{algorithmic}
+	\label{algo:factorial}	% defines a label to refer to this
+\end{algorithm}
+
+El programa desarrollado incluye un conteo del número de iteraciones realizado entre el proceso de particionar el conjunto de puntos y comparar las distancias entre puntos, lo cual serviría como resultados para el presente informe. Se realizarían experimentos haciendo uso del algoritmo recursivo como primer caso y del algoritmo de fuerza bruta en todo el conjunto de datos como segundo caso, lo anterior es para comparar las mejoras en la complejidad temporal que representa el uso del algoritmo recursivo con respecto al algoritmo de fuerza bruta. Los experimentos se realizarían con conjuntos de datos cuyo tamaño incrementa en potencias de 2 entre $2^1$ y $2^16$, repitiéndose 10 veces para cada tamaño del conjunto de datos de entrada. Los resultados se escribirían junto con el promedio de las 10 repeticiones, en un archivo de texto tabular cuyo delimitador son los espacios. Posteriormente se tomaron estos resultados obtenidos y se graficaron de forma logarítmica haciendo uso de la librería matplotlib del lenguaje de programación Python.

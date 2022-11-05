@@ -1,0 +1,25 @@
+\section{Introducción}
+En ciencias de la computación, la complejidad temporal se define como la cantidad de tiempo que se toma un algoritmo en ejecutarse en función del tamaño del conjunto de datos de entrada \ref{bib1}. Es un factor que permite cuantificar el rendimiento de un programa dependiendo de la cantidad de datos que este debe procesar. Para encontrar la complejidad temporal de un programa se cuenta el número de operaciones significativas que el programa realiza para un conjunto de datos de entrada de tamaño N. Generalmente se va a encontrar que el tiempo que un programa se toma no solamente depende de N, sino que tambien puede depender de otros factores del conjunto de datos de entrada. Lo anterior significa que se puede encontrar que un mismo algoritmo puede tardarse diferentes cantidades de tiempo para diferentes conjuntos de datos del mismo tamaño. Diferentes tiempos para conjuntos de datos del mismo tamaño reciben el nombre de casos en el análisis de la complejidad temporal. \ref{bib2}, se tienen en cuenta 3 casos principales:
+
+\begin{enumerate}
+    \item El mejor caso o el caso para el cual el tiempo es el menor de todos.
+    \item El caso promedio o el promedio de los tiempos de todos los casos.
+    \item El peor caso o el caso para el cual el tiempo es el mayor de todos.
+\end{enumerate}
+
+El caso promedio será objeto de estudio en el presente informe. Según \ref{bib3}, este está dado por la fórmula: 
+\begin{align*}
+    A(N) = \cdot \sum_{i=1}^{n} p_i \cdot x_i
+\end{align*}
+Donde $p_i$ es la posibilidad de que se de el caso $i$ y $x_i$ es la complejidad temporal del mismo caso. Para simplificar el análisis de la complejidad temporal se utiliza la notación asintótica, la cual se deshace de coeficientes y utiliza el término más significativo para representar la complejidad temporal en términos de potencias de N \ref{bib4}. Ejemplo:
+\begin{itemize}
+    \item $N^0$: El algoritmo siempre se toma la misma cantidad de tiempo, sin importar el tamaño del conjunto de datos de entrada (Tiempo constante).
+    \item $N^1$: El número de operaciones que necesita el algoritmo es siempre igual al número de los datos de entrada (Tiempo lineal).
+    \item $N^2$: El número de operaciones que necesita el algoritmo incrementa cuadráticamente con respecto al número de los datos de entrada (Tiempo cuadrático).
+\end{itemize}
+La notación asintótica tiene 3 formas principales:
+\begin{itemize}
+    \item Big $O$: Describe la complejidad temporal del algoritmo en base al límite superior de esta (Peor caso).
+    \item Big $\Omega$: Describe la complejidad temporal del algoritmo en base al límite inferior de esta (Mejor caso).
+    \item Big $\Theta$: Describe el orden exacto de la complejidad temporal si está en el mismo orden para todos los casos
+\end{itemize}
