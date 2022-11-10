@@ -34,8 +34,11 @@ public class Point2D {
     /*
      * Finds the euclidean distance between this point and other point.
     */
-    public double distanceTo(Point2D point) {
-        return Math.sqrt(Math.pow(point.x - this.x, 2) + Math.pow(point.y - this.y, 2));
+    public long distanceTo(Point2D point) {
+        long dx = (long) point.x - this.x;
+        long dy = (long) point.y - this.y;
+
+        return dx*dx + dy*dy;
     }
 
     /*

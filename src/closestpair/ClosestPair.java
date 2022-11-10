@@ -50,7 +50,7 @@ public class ClosestPair {
         SpacePartitionResult partitionResult = SpacePartition2D.partition(points);
         long iterations = partitionResult.getIterations();
         long time = partitionResult.getTime();
-        double minimunDistance = Double.MAX_VALUE;
+        long minimunDistance = Long.MAX_VALUE;
         ArrayList<SpacePartition2D> partitions = partitionResult.getPartitions();
         
         // For each partition

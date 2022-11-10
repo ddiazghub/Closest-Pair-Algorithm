@@ -12,9 +12,9 @@ import closestpair.Point2D;
 public class ClosestPairResult extends ExecutionResult {
     private final Point2D point1;
     private final Point2D point2;
-    private final double distance;
+    private final long distance;
 
-    public ClosestPairResult(Point2D point1, Point2D point2, double distance, long iterations, long time) {
+    public ClosestPairResult(Point2D point1, Point2D point2, long distance, long iterations, long time) {
         super(iterations, time);
         this.point1 = point1;
         this.point2 = point2;
@@ -29,7 +29,7 @@ public class ClosestPairResult extends ExecutionResult {
         return this.point2;
     }
 
-    public double getDistance() {
+    public long getDistance() {
         return this.distance;
     }
 }

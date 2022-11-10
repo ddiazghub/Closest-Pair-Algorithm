@@ -38,7 +38,7 @@ public class SpacePartition2D {
         // Starts counting iterations, and elapsed time
         long iterations = 0;
         long startTime = System.nanoTime();
-        double minimunDistance = Double.MAX_VALUE;
+        long minimunDistance = Long.MAX_VALUE;
         int end = this.points.size();
 
         // Compares each point to all other points and finds the distance
@@ -48,7 +48,7 @@ public class SpacePartition2D {
             for (int j = i + 1; j < end; j++) {
                 iterations++;
                 Point2D second = points.get(j);
-                double distance = first.distanceTo(second);
+                long distance = first.distanceTo(second);
 
                 // If the distance is smaller than the minimun distance it becomes the new closest pair
                 if (distance < minimunDistance) {
